@@ -1,0 +1,6 @@
+{
+  "name": "EVA Device Setup",
+  "description": "Production-ready Android-first setup and management app for physical AI assistant EVA ESP32 devices.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

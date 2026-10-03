@@ -1,0 +1,70 @@
+{
+  "entities": {
+    "Device": {
+      "title": "EVA Device",
+      "description": "Stored ESP32 EVA device configuration and status for the user.",
+      "type": "object",
+      "properties": {
+        "device_id": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "board": {
+          "type": "string",
+          "enum": ["ESP32-WROOM", "ESP32-S3", "ESP32-C3 Mini"]
+        },
+        "firmware": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "wifi": {
+          "type": "boolean"
+        },
+        "ssid": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "ip": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "rssi": {
+          "type": "number"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["online", "offline", "connecting", "provisioning"]
+        },
+        "last_seen": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "backend_connected": {
+          "type": "boolean"
+        },
+        "userId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["device_id", "board", "firmware", "wifi", "ssid", "ip", "rssi", "status", "last_seen", "backend_connected", "userId", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/devices/{deviceId}": {
+      "schema": {
+        "$ref": "#/entities/Device"
+      },
+      "description": "User's EVA ESP32 devices collection."
+    }
+  }
+}

@@ -1,0 +1,54 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global safety net: deny all by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidDevice(data) {
+      return data.keys().hasAll(['device_id', 'board', 'firmware', 'wifi', 'ssid', 'ip', 'rssi', 'status', 'last_seen', 'backend_connected', 'userId', 'createdAt', 'updatedAt']) &&
+             data.keys().hasOnly(['device_id', 'board', 'firmware', 'wifi', 'ssid', 'ip', 'rssi', 'status', 'last_seen', 'backend_connected', 'userId', 'createdAt', 'updatedAt']) &&
+             data.device_id is string && data.device_id.size() <= 128 && data.device_id.matches('^[a-zA-Z0-9_\\-]+$') &&
+             data.board is string && data.board in ['ESP32-WROOM', 'ESP32-S3', 'ESP32-C3 Mini'] &&
+             data.firmware is string && data.firmware.size() <= 32 &&
+             data.wifi is bool &&
+             data.ssid is string && data.ssid.size() <= 64 &&
+             data.ip is string && data.ip.size() <= 64 &&
+             data.rssi is number &&
+             data.status is string && data.status in ['online', 'offline', 'connecting', 'provisioning'] &&
+             data.last_seen is string && data.last_seen.size() <= 64 &&
+             data.backend_connected is bool &&
+             data.userId is string && data.userId == request.auth.uid &&
+             data.createdAt is string && data.createdAt.size() <= 64 &&
+             data.updatedAt is string && data.updatedAt.size() <= 64;
+    }
+
+    match /users/{userId}/devices/{deviceId} {
+      allow read: if isSignedIn() && userId == request.auth.uid;
+
+      allow create: if isSignedIn() && 
+                    userId == request.auth.uid && 
+                    isValidId(deviceId) && 
+                    isValidDevice(request.resource.data) &&
+                    request.resource.data.userId == request.auth.uid;
+
+      allow update: if isSignedIn() && 
+                    userId == request.auth.uid && 
+                    isValidId(deviceId) && 
+                    isValidDevice(request.resource.data) &&
+                    request.resource.data.userId == request.auth.uid &&
+                    request.resource.data.userId == resource.data.userId;
+
+      allow delete: if isSignedIn() && userId == request.auth.uid;
+    }
+  }
+}
